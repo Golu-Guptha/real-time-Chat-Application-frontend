@@ -82,7 +82,7 @@ const Chat = () => {
   const fetchChannels = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/channels', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/channels`, {
         headers: { 'x-auth-token': token }
       });
       setChannels(res.data);
@@ -95,7 +95,7 @@ const Chat = () => {
   const fetchMessages = async (channelId) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/messages/${channelId}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messages/${channelId}`, {
         headers: { 'x-auth-token': token }
       });
       setMessages(res.data);
@@ -112,7 +112,7 @@ const Chat = () => {
     if (!isMember) {
       try {
         const token = localStorage.getItem('token');
-        await axios.post(`http://localhost:5000/api/channels/${channel._id}/join`, {}, {
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/channels/${channel._id}/join`, {}, {
           headers: { 'x-auth-token': token }
         });
         fetchChannels();
@@ -137,7 +137,7 @@ const Chat = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/messages', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/messages`, {
         channelId: currentChannel._id,
         content: newMessage
       }, {
@@ -160,7 +160,7 @@ const Chat = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.delete(`http://localhost:5000/api/messages/${messageId}`, {
+      const res = await axios.delete(`${import.meta.env.VITE_API_URL}/api/messages/${messageId}`, {
         headers: { 'x-auth-token': token }
       });
 
@@ -185,7 +185,7 @@ const Chat = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/channels', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/channels`, {
         name: newChannelName,
         description: newChannelDesc
       }, {
