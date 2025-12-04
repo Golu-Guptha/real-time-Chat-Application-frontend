@@ -56,6 +56,18 @@ const Chat = () => {
         });
         return { ...ch, members: updatedMembers };
       }));
+
+      // Update currentChannel if it exists
+      setCurrentChannel(prev => {
+        if (!prev) return prev;
+        const updatedMembers = prev.members.map(m => {
+          if (m._id === userId) {
+            return { ...m, isOnline };
+          }
+          return m;
+        });
+        return { ...prev, members: updatedMembers };
+      });
     });
 
     socket.on('message_deleted', (messageId) => {
@@ -291,6 +303,28 @@ const Chat = () => {
           </div>
         )}
       </div>
+
+      {/* Members Sidebar */}
+      {currentChannel && (
+        <div className="members-sidebar">
+          <div className="members-header">
+            <h3>Members — {currentChannel.members.length}</h3>
+          </div>
+          <div className="members-list">
+            {currentChannel.members.map(member => (
+              <div key={member._id} className="member-item">
+                <div className="member-avatar">
+                  {member.username.charAt(0).toUpperCase()}
+                  <div className={`member-status ${member.isOnline ? 'online' : ''}`}></div>
+                </div>
+                <div className="member-name" style={{ color: member.isOnline ? '#fff' : '' }}>
+                  {member.username}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Create Channel Modal */}
       {showCreateChannel && (
