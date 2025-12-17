@@ -25,6 +25,23 @@ export const AuthProvider = ({ children }) => {
         };
 
         checkLoggedIn();
+
+        // Axios Interceptor for 401s
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response && error.response.status === 401) {
+                    localStorage.removeItem('token');
+                    setUser(null);
+                    // Optional: Window location reload or just state change triggers ProtectedRoute
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
     }, []);
 
     const login = async (email, password) => {

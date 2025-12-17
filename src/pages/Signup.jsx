@@ -25,7 +25,7 @@ const Signup = () => {
             <div className="auth-box">
                 <h2>Create Account</h2>
                 <p>Join the team today</p>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} autoComplete="off">
                     <div className="form-group">
                         <label>Username</label>
                         <input
@@ -33,6 +33,7 @@ const Signup = () => {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
+                            autoComplete="off"
                         />
                     </div>
                     <div className="form-group">
@@ -42,6 +43,7 @@ const Signup = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            autoComplete="off"
                         />
                     </div>
                     <div className="form-group">
@@ -51,6 +53,7 @@ const Signup = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            autoComplete="new-password"
                         />
                     </div>
                     <button type="submit" className="btn-primary">Sign Up</button>

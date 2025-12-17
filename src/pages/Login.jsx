@@ -24,7 +24,7 @@ const Login = () => {
             <div className="auth-box">
                 <h2>Welcome Back</h2>
                 <p>Login to your account</p>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} autoComplete="off">
                     <div className="form-group">
                         <label>Email</label>
                         <input
@@ -32,6 +32,7 @@ const Login = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            autoComplete="off"
                         />
                     </div>
                     <div className="form-group">
@@ -41,6 +42,7 @@ const Login = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            autoComplete="new-password"
                         />
                     </div>
                     <button type="submit" className="btn-primary">Login</button>
