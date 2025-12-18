@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { AppDataContext } from '../context/AppDataContext';
 import { toast } from 'react-toastify';
 
-const ChannelInfoModal = ({ channel, onClose, onChannelSelect }) => {
+const ChannelInfoModal = ({ channel, onClose, onChannelSelect, onlineUsers }) => {
     const { user } = useContext(AuthContext);
     const { refreshData } = useContext(AppDataContext);
 
@@ -109,6 +109,10 @@ const ChannelInfoModal = ({ channel, onClose, onChannelSelect }) => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <div className="member-avatar">
                                         {member.username.charAt(0).toUpperCase()}
+                                        {/* Status Dot */}
+                                        {(onlineUsers && (onlineUsers.has(member._id) || member.isOnline || member._id === user.id)) && (
+                                            <div className="member-status online" style={{ position: 'absolute', bottom: -2, right: -2, width: 10, height: 10, borderRadius: '50%', background: '#10b981', border: '2px solid #262626' }}></div>
+                                        )}
                                     </div>
                                     <div>
                                         <div style={{ fontWeight: member._id === (user._id || user.id) ? 'bold' : 'normal' }}>

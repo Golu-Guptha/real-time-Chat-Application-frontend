@@ -28,6 +28,8 @@ const Chat = () => {
   const [showChannelInfo, setShowChannelInfo] = useState(false);
   const [showJoinRequests, setShowJoinRequests] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const [mobileView, setMobileView] = useState('channels'); // 'channels', 'chat', 'members'
 
   const messagesEndRef = useRef(null);
 
@@ -118,7 +120,39 @@ const Chat = () => {
       if (currentChannel && message.channel === currentChannel._id) {
         setMessages((prev) => [...prev, message]);
         scrollToBottom();
+      } else {
+        // Increment unread count if not current channel
+        setUnreadCounts(prev => ({
+          ...prev,
+          [message.channel]: (prev[message.channel] || 0) + 1
+        }));
+
+        // Popup Notification
+        // Find channel name
+        const channelName = myChannels.find(c => String(c._id) === String(message.channel))?.name || 'Unknown';
+        // Notify if not current user
+        if (message.sender._id !== currentUserId) {
+          toast.info(`New message in #${channelName} from ${message.sender.username}`, {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
       }
+
+      // Real-time: Move channel to top
+      setMyChannels(prev => {
+        const moveId = String(message.channel);
+        const idx = prev.findIndex(c => String(c._id) === moveId);
+        if (idx > -1) {
+          const updated = { ...prev[idx], lastMessageAt: new Date().toISOString() };
+          return [updated, ...prev.filter((_, i) => i !== idx)];
+        }
+        return prev;
+      });
     });
 
     socket.on('user_joined', ({ channelId, user: joinedUser }) => {
@@ -249,6 +283,9 @@ const Chat = () => {
   };
 
   const handleChannelSelect = async (channel) => {
+    // Clear unread count
+    setUnreadCounts(prev => ({ ...prev, [channel._id]: 0 }));
+
     const isMember = channel.members.some(member => member._id === currentUserId || member === currentUserId);
 
     if (!isMember) {
@@ -284,6 +321,9 @@ const Chat = () => {
     if (socket) {
       socket.emit('join_channel', channel._id);
     }
+
+    // Switch to chat view on mobile
+    setMobileView('chat');
   };
 
   const handleSendMessage = async (e) => {
@@ -353,7 +393,7 @@ const Chat = () => {
         headers: { 'x-auth-token': token }
       });
 
-      setMyChannels(prev => [...prev, res.data]);
+      setMyChannels(prev => [res.data, ...prev]);
       setShowCreateChannel(false);
       refreshData();
       toast.success('Channel created');
@@ -369,7 +409,7 @@ const Chat = () => {
 
 
   return (
-    <div className="chat-container">
+    <div className={`chat-container mobile-view-${mobileView}`}>
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-header">
@@ -429,6 +469,11 @@ const Chat = () => {
                 <span className="hash">{isDM ? '@' : '#'}</span>
                 {displayName}
                 {channel.isPrivate && !isDM && <span className="lock-icon">🔒</span>}
+                {unreadCounts[channel._id] > 0 && (
+                  <span className="notification-badge" style={{ position: 'static', marginLeft: 'auto', background: '#ef4444' }}>
+                    {unreadCounts[channel._id]}
+                  </span>
+                )}
                 {/* Show online count or badges if needed */}
               </div>
             )
@@ -450,8 +495,17 @@ const Chat = () => {
             {/* Clickable Header for Info */}
             <div className="chat-header" onClick={() => setShowChannelInfo(true)} style={{ cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3>#{currentChannel.name}</h3>
-                <span style={{ fontSize: '1.2rem' }}>ℹ️</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <button
+                    className="mobile-back-btn"
+                    onClick={(e) => { e.stopPropagation(); setMobileView('channels'); }}
+                    style={{ fontSize: '1.2rem', background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'none' }}
+                  >
+                    ←
+                  </button>
+                  <h3>#{currentChannel.name}</h3>
+                </div>
+                <span className="info-icon" style={{ fontSize: '1.2rem' }}>ℹ️</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '0.8rem', color: '#a1a1a1' }}>{currentChannel.description}</span>
@@ -531,7 +585,14 @@ const Chat = () => {
       {
         currentChannel && (
           <div className="members-sidebar">
-            <div className="members-header">
+            <div className="members-header" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button
+                className="mobile-back-btn"
+                onClick={() => setMobileView('chat')}
+                style={{ fontSize: '1.2rem', background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'none' }}
+              >
+                ←
+              </button>
               <h3>Members — {currentChannel.members.length}</h3>
             </div>
             <div className="members-list">
@@ -624,6 +685,7 @@ const Chat = () => {
             channel={currentChannel}
             onClose={() => setShowChannelInfo(false)}
             onChannelSelect={handleChannelSelect}
+            onlineUsers={onlineUsers}
           />
         )
       }

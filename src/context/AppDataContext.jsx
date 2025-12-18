@@ -108,15 +108,21 @@ export const AppDataProvider = ({ children }) => {
                 // The edge case is: "Backend auto-joined us" but "Frontend list is stale/incomplete".
 
                 setMyChannels(prev => {
-                    const exists = prev.find(c => c._id === message.channel);
-                    if (!exists) {
+                    const channelIdStr = String(message.channel);
+                    const channelIndex = prev.findIndex(c => String(c._id) === channelIdStr);
+
+                    if (channelIndex > -1) {
+                        const updatedChannel = {
+                            ...prev[channelIndex],
+                            lastMessageAt: new Date().toISOString()
+                        };
+                        const newChannels = [updatedChannel, ...prev.slice(0, channelIndex), ...prev.slice(channelIndex + 1)];
+                        return newChannels;
+                    } else {
                         console.log("[Context] Message received for unknown channel, fetching...", message.channel);
-                        // Trigger fetch side-effect
-                        // We can't await here.
-                        // We'll call a helper function.
                         fetchAndAddChannel(message.channel);
+                        return prev;
                     }
-                    return prev;
                 });
             });
 
@@ -128,8 +134,9 @@ export const AppDataProvider = ({ children }) => {
                     });
                     const channel = res.data;
                     setMyChannels(prev => {
-                        if (prev.find(c => c._id === channel._id)) return prev;
-                        return [...prev, channel];
+                        if (prev.find(c => String(c._id) === String(channel._id))) return prev;
+                        // Prepend because if we fetched it due to a message/event, it's likely active
+                        return [channel, ...prev];
                     });
                 } catch (err) {
                     console.error("Failed to fetch missing channel", err);

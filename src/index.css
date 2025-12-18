@@ -415,6 +415,8 @@ button:focus {
     flex-direction: column;
     background: var(--bg-primary);
     position: relative;
+    /* Important for mobile flex behavior */
+    min-width: 0;
 }
 
 .chat-header {
@@ -422,8 +424,14 @@ button:focus {
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-secondary);
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    /* Flex direction was column in source but horizontal layout is cleaner for back btn */
+    /* flex-direction: column; */
+    flex-direction: row;
+    /* Changed for mobile nav compatibility */
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    /* Ensure proper spacing */
 }
 
 .chat-header h3 {
@@ -886,26 +894,83 @@ button:focus {
 }
 
 /* ============================================
-   RESPONSIVE ADJUSTMENTS
+   RESPONSIVE ADJUSTMENTS (Enhanced)
    ============================================ */
 @media (max-width: 768px) {
-    .sidebar {
-        width: 240px;
+
+    .sidebar,
+    .chat-area,
+    .members-sidebar {
+        width: 100% !important;
+        height: 100% !important;
     }
 
-    .members-sidebar {
+    /* Controlling visibility based on container state */
+    .mobile-view-channels .sidebar {
+        display: flex;
+        width: 100% !important;
+    }
+
+    .mobile-view-channels .chat-area {
         display: none;
+    }
+
+    .mobile-view-channels .members-sidebar {
+        display: none;
+    }
+
+    .mobile-view-chat .sidebar {
+        display: none;
+    }
+
+    .mobile-view-chat .chat-area {
+        display: flex;
+        width: 100% !important;
+    }
+
+    .mobile-view-chat .members-sidebar {
+        display: none;
+    }
+
+    .mobile-view-members .sidebar {
+        display: none;
+    }
+
+    .mobile-view-members .chat-area {
+        display: none;
+    }
+
+    .mobile-view-members .members-sidebar {
+        display: flex;
+        width: 100% !important;
     }
 
     .message {
         max-width: 85%;
     }
+
+    .mobile-back-btn {
+        display: block !important;
+        margin-right: 15px;
+    }
+
+    .user-info {
+        padding: 16px;
+        background: var(--bg-tertiary);
+    }
+
+    .user-info span {
+        font-size: 1rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
 }
 
 @media (max-width: 480px) {
-    .sidebar {
-        width: 200px;
-    }
+
 
     .auth-box {
         padding: 32px 24px;
